@@ -1,3 +1,36 @@
+React Button Component
+Overview
+This project is a simple React application that demonstrates how to create and use a reusable button component with JSX. The application uses React state management to track the number of times the button has been clicked.
+Features
+Reusable Button component
+Click event handling
+React useState hook for state management
+Console logging when the button is clicked
+Live click counter displayed on the page
+Technologies Used
+React
+JavaScript (ES6)
+JSX
+How to Run
+Install the project dependencies:
+npm install
+Start the development server:
+npm start
+Open your browser and navigate to:
+http://localhost:3000
+How It Works
+The application contains two components:
+App.js – Manages the application's state and contains the click event handler.
+Button.js – Displays the button and the current click count using props passed from the parent component.
+Each time the Click Me button is pressed, the application logs a message to the browser console and increments the click counter displayed on the screen.
+
+
+
+
+
+
+
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
