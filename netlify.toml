@@ -1,4 +1,5 @@
 [build]
+  base = "burns-netlify-app"
   command = "npm run build"
   publish = "build"
 
