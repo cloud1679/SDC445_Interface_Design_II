@@ -20,34 +20,28 @@ ChartJS.register(
 );
 
 function HorseGraphic({ horses }) {
-    const maleCount = horses.filter(
-        (horse) => horse.gender.toLowerCase() === 'male'
-    ).length;
-
-    const femaleCount = horses.filter(
-        (horse) => horse.gender.toLowerCase() === 'female'
-    ).length;
-
-    const geldingCount = horses.filter(
-        (horse) => horse.gender.toLowerCase() === 'gelding'
-    ).length;
+    const genderOptions = ['Mare', 'Filly', 'Stallion', 'Colt', 'Gelding'];
+    const genderCounts = genderOptions.map(
+        (gender) =>
+            horses.filter(
+                (horse) => horse.gender.toLowerCase() === gender.toLowerCase()
+            ).length
+    );
 
     const unspecifiedCount = horses.filter(
         (horse) =>
             horse.gender.trim() === '' ||
-            (
-                horse.gender.toLowerCase() !== 'male' &&
-                horse.gender.toLowerCase() !== 'female' &&
-                horse.gender.toLowerCase() !== 'gelding'
+            !genderOptions.some(
+                (gender) => gender.toLowerCase() === horse.gender.toLowerCase()
             )
     ).length;
 
     const chartData = {
-        labels: ['Male', 'Female', 'Gelding', 'Unspecified'],
+        labels: [...genderOptions, 'Unspecified'],
         datasets: [
             {
                 label: 'Number of Horses',
-                data: [maleCount, femaleCount, geldingCount, unspecifiedCount],
+                data: [...genderCounts, unspecifiedCount],
             },
         ],
     };
@@ -73,18 +67,68 @@ function HorseGraphic({ horses }) {
         },
     };
 
+    const breedCounts = horses.reduce((counts, horse) => {
+        const breed = horse.type.trim() || 'Unspecified';
+        counts[breed] = (counts[breed] || 0) + 1;
+        return counts;
+    }, {});
+
+    const breedChartData = {
+        labels: Object.keys(breedCounts),
+        datasets: [
+            {
+                label: 'Number of Horses',
+                data: Object.values(breedCounts),
+                backgroundColor: '#8b5e3c',
+            },
+        ],
+    };
+
+    const breedChartOptions = {
+        responsive: true,
+        plugins: {
+            title: {
+                display: true,
+                text: 'Horse Profiles by Breed',
+            },
+            legend: {
+                display: true,
+            },
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    stepSize: 1,
+                },
+            },
+        },
+    };
+
     return (
-        <section>
-            <h2>Horse Care Chart</h2>
+        <>
+            <section id="horse-gender-chart">
+                <h2>Horse Gender Chart</h2>
 
-            {horses.length === 0 ? (
-                <p>Add a horse to display chart data.</p>
-            ) : (
-                <Bar data={chartData} options={chartOptions} />
-            )}
+                {horses.length === 0 ? (
+                    <p>Add a horse to display gender chart data.</p>
+                ) : (
+                    <Bar data={chartData} options={chartOptions} />
+                )}
+            </section>
 
-            <p>Total Horses: {horses.length}</p>
-        </section>
+            <section id="horse-breed-chart">
+                <h2>Horse Breed Chart</h2>
+
+                {horses.length === 0 ? (
+                    <p>Add a horse to display breed chart data.</p>
+                ) : (
+                    <Bar data={breedChartData} options={breedChartOptions} />
+                )}
+
+                <p>Total Horses: {horses.length}</p>
+            </section>
+        </>
     );
 }
 
