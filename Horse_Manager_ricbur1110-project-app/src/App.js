@@ -7,11 +7,14 @@ import HorseForm, {
 } from './form';
 
 function sanitizeTextInput(value, maxLength) {
-  return value.replace(/[<>]/g, '').replace(/\s+/g, ' ').slice(0, maxLength);
+  return String(value ?? '')
+    .replace(/[<>]/g, '')
+    .replace(/\s+/g, ' ')
+    .slice(0, maxLength);
 }
 
 function validateHorseName(value) {
-  const trimmedName = value.trim();
+  const trimmedName = String(value ?? '').trim();
 
   if (trimmedName === '') return 'Please enter a horse name.';
   if (!/^[a-zA-Z0-9 .'-]+$/.test(trimmedName)) {
@@ -61,15 +64,25 @@ function Appointments({
   onDelete,
 }) {
   function formatDate(dateValue) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(dateValue)) return 'Invalid date';
     const [year, month, day] = dateValue.split('-').map(Number);
+    const date = new Date(year, month - 1, day);
+    if (
+      date.getFullYear() !== year ||
+      date.getMonth() !== month - 1 ||
+      date.getDate() !== day
+    ) {
+      return 'Invalid date';
+    }
     return new Intl.DateTimeFormat('en-US', {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
-    }).format(new Date(year, month - 1, day));
+    }).format(date);
   }
 
   function formatTime(timeValue) {
+    if (!/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(timeValue)) return 'Invalid time';
     const [hour, minute] = timeValue.split(':').map(Number);
     return new Intl.DateTimeFormat('en-US', {
       hour: 'numeric',
@@ -203,11 +216,11 @@ export default function App() {
       return;
     }
 
-    setHorseName(horse.name);
-    setHorseGender(horse.gender);
-    setHorseType(horse.type);
+    setHorseName(horse.name || '');
+    setHorseGender(horse.gender || '');
+    setHorseType(horse.type || '');
     setHorseColor(horse.color || '');
-    setHorseNotes(horse.notes);
+    setHorseNotes(horse.notes || '');
     setHorseNameError('');
     setEditingHorseId(horse.id);
     setMessage(`Loaded ${horse.name} for editing.`);
@@ -235,7 +248,9 @@ export default function App() {
 
   function addAppointment() {
     const name = appointmentName.trim();
-    if (!name || !appointmentDate || !appointmentTime) {
+    const validDate = /^\d{4}-\d{2}-\d{2}$/.test(appointmentDate);
+    const validTime = /^(?:[01]\d|2[0-3]):[0-5]\d$/.test(appointmentTime);
+    if (!name || !validDate || !validTime) {
       setMessage('Please enter an appointment purpose, date, and time.');
       return;
     }
@@ -257,10 +272,21 @@ export default function App() {
   }
 
   function deleteAppointment(appointmentId) {
+    const appointment = appointments.find((item) => item.id === appointmentId);
+    if (!appointment) {
+      setMessage('That appointment could not be found.');
+      return;
+    }
+
+    if (!window.confirm(`Are you sure you want to delete ${appointment.name}?`)) {
+      setMessage(`${appointment.name} was not deleted.`);
+      return;
+    }
+
     setAppointments((current) =>
       current.filter((appointment) => appointment.id !== appointmentId)
     );
-    setMessage('The appointment was deleted.');
+    setMessage(`${appointment.name} was deleted.`);
   }
 
   const fields = [

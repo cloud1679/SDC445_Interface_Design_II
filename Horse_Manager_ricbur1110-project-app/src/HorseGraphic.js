@@ -20,19 +20,22 @@ ChartJS.register(
 );
 
 function HorseGraphic({ horses }) {
+    const safeHorses = Array.isArray(horses) ? horses : [];
+    const getText = (value) => (typeof value === 'string' ? value : '');
     const genderOptions = ['Mare', 'Filly', 'Stallion', 'Colt', 'Gelding'];
     const genderCounts = genderOptions.map(
         (gender) =>
-            horses.filter(
-                (horse) => horse.gender.toLowerCase() === gender.toLowerCase()
+            safeHorses.filter(
+                (horse) => getText(horse?.gender).toLowerCase() === gender.toLowerCase()
             ).length
     );
 
-    const unspecifiedCount = horses.filter(
+    const unspecifiedCount = safeHorses.filter(
         (horse) =>
-            horse.gender.trim() === '' ||
+            getText(horse?.gender).trim() === '' ||
             !genderOptions.some(
-                (gender) => gender.toLowerCase() === horse.gender.toLowerCase()
+                (gender) =>
+                    gender.toLowerCase() === getText(horse?.gender).toLowerCase()
             )
     ).length;
 
@@ -67,8 +70,8 @@ function HorseGraphic({ horses }) {
         },
     };
 
-    const breedCounts = horses.reduce((counts, horse) => {
-        const breed = horse.type.trim() || 'Unspecified';
+    const breedCounts = safeHorses.reduce((counts, horse) => {
+        const breed = getText(horse?.type).trim() || 'Unspecified';
         counts[breed] = (counts[breed] || 0) + 1;
         return counts;
     }, {});
@@ -110,7 +113,7 @@ function HorseGraphic({ horses }) {
             <section id="horse-gender-chart">
                 <h2>Horse Gender Chart</h2>
 
-                {horses.length === 0 ? (
+                {safeHorses.length === 0 ? (
                     <p>Add a horse to display gender chart data.</p>
                 ) : (
                     <Bar data={chartData} options={chartOptions} />
@@ -120,13 +123,13 @@ function HorseGraphic({ horses }) {
             <section id="horse-breed-chart">
                 <h2>Horse Breed Chart</h2>
 
-                {horses.length === 0 ? (
+                {safeHorses.length === 0 ? (
                     <p>Add a horse to display breed chart data.</p>
                 ) : (
                     <Bar data={breedChartData} options={breedChartOptions} />
                 )}
 
-                <p>Total Horses: {horses.length}</p>
+                <p>Total Horses: {safeHorses.length}</p>
             </section>
         </>
     );
